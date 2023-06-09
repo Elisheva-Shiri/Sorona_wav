@@ -27,7 +27,7 @@ class dataset_v3(nussl.datasets.BaseDataset):
             for file in os.scandir(folder):
                 lable.append(file)
             #bring the name itself and not the path
-            lables[folder] = lable
+            lables[folder.name] = lable
         return lables
 
     def _set_zip(self, lables):
@@ -78,10 +78,12 @@ class dataset_v3(nussl.datasets.BaseDataset):
         metadata = {
             'lables': self.lables
         }
-        
 
         output = {
-            'mix': sum(sources.values()),
+            'mix': nussl.AudioSignal(
+                audio_data_array=sum(sources.values()).audio_data, 
+                sample_rate=self.sample_rate
+            ),
             'sources': sources,
             'metadata': metadata
         }
