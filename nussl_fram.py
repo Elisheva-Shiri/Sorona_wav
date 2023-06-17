@@ -17,7 +17,7 @@ print(f"Device is {device}")
 class dataset_v3(nussl.datasets.BaseDataset):
     # *args == pass arguments as is to parent
     # *kwargs == pass arguments by name to parent 
-    def __init__(self, min_product, *args, **kwargs):
+    def __init__(self, *args, min_product=5, **kwargs):
         self.min_product = min_product
         super().__init__(*args, **kwargs)
 
