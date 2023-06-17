@@ -4,6 +4,8 @@ import nussl
 import os,fnmatch
 import numpy as np
 import librosa
+from itertools import product
+
 
 
 if torch.cuda.is_available():
@@ -15,7 +17,8 @@ print(f"Device is {device}")
 class dataset_v3(nussl.datasets.BaseDataset):
     # *args == pass arguments as is to parent
     # *kwargs == pass arguments by name to parent 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, min_product, *args, **kwargs):
+        self.min_product = min_product
         super().__init__(*args, **kwargs)
 
     def _get_files(self, path):
@@ -30,9 +33,17 @@ class dataset_v3(nussl.datasets.BaseDataset):
             lables[folder.name] = lable
         return lables
 
-    def _set_zip(self, lables):
-        # * able to open a list and pass it as a sepered values for dict
-        return list(zip(*lables.values()))
+
+    def _set_zip(self, labels):
+        file_lists = list(labels.values()) 
+        min_length = min(len(lst) for lst in file_lists)  # Find the minimum length among the file lists
+        min_length = min(min_length, self.min_product) # don't create product larger than min_prodcut^3
+        file_lists = [file_list[:min_length] for file_list in file_lists]
+        mixed_values = list(product(*file_lists))  # Generate the Cartesian product with repeat=min_length
+        return mixed_values
+
+
+
     
     def get_items(self, path):
         lables = self._get_files(path)
