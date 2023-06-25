@@ -30,17 +30,21 @@ class dataset_v3(nussl.datasets.BaseDataset):
             for file in os.scandir(folder):
                 lable.append(file)
             #bring the name itself and not the path
-            lables[folder.name] = lable
+            lables[folder.name] = lable[:1000]
         return lables
 
 
-    def _set_zip(self, labels):
-        file_lists = list(labels.values()) 
-        min_length = min(len(lst) for lst in file_lists)  # Find the minimum length among the file lists
-        min_length = min(min_length, self.min_product) # don't create product larger than min_prodcut^3
-        file_lists = [file_list[:min_length] for file_list in file_lists]
-        mixed_values = list(product(*file_lists))  # Generate the Cartesian product with repeat=min_length
-        return mixed_values
+    # def _set_zip(self, labels):
+    #     file_lists = list(labels.values()) 
+    #     min_length = min(len(lst) for lst in file_lists)  # Find the minimum length among the file lists
+    #     min_length = min(min_length, self.min_product) # don't create product larger than min_prodcut^3
+    #     file_lists = [file_list[:min_length] for file_list in file_lists]
+    #     mixed_values = list(product(*file_lists))  # Generate the Cartesian product with repeat=min_length
+    #     return mixed_values
+
+    def _set_zip(self, lables):
+        # * able to open a list and pass it as a sepered values for dict
+        return list(zip(*lables.values()))
 
 
 
@@ -50,16 +54,6 @@ class dataset_v3(nussl.datasets.BaseDataset):
         self.lables = list(lables.keys())
         return self._set_zip(lables)
         
-
-    # def _duretion_addapt(self, sources, duretion_min, max_length):
-    #     data = []
-    #     # Align the audio signals to the maximum length
-    #     data = [
-    #         np.pad(source.audio_data[0], (0, max_length - source.signal_length), 'constant')
-    #         for source in sources
-    #     ]
-
-    #     return data
     
     def _compute_ideal_binary_mask(self, source_magnitudes):
         ibm = (source_magnitudes == np.max(source_magnitudes, axis=-1, keepdims=True)).astype(float)
@@ -78,13 +72,7 @@ class dataset_v3(nussl.datasets.BaseDataset):
             sources[file_path.path] = file
             duretions.append(file.signal_duration)
             lengths.append(file.signal_length)
-        
-        # duretion_min = min(duretions)
-        
-        # # Find the maximum length among the audio signals
-        # max_length = max([source.signal_length for source in sources.values()])
 
-        # mix = sum(self._duretion_addapt(sources.values(), duretion_min, max_length)) # sum signals
 
         metadata = {
             'lables': self.lables
